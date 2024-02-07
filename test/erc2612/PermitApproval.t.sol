@@ -3,8 +3,8 @@
 pragma solidity ^0.8.20;
 
 import {Test, console} from "forge-std/Test.sol";
-import {Token} from "../src/eip2612/Token.sol";
-import {SigUtils} from "../src/eip2612/SigUtils.sol";
+import {Token} from "../../src/eip2612/Token.sol";
+import {SigUtils} from "../../src/eip2612/SigUtils.sol";
 
 contract PermitTokenTest is Test {
     Token internal token;
