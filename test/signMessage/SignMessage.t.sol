@@ -24,20 +24,20 @@ contract SignMessageTest is Test {
     function test_signAndCheck() external {
         string memory message = "You agree to the terms and conditions";
         // string memory name = verifyingContract.name();
-        string memory version = verifyingContract.version();
+        // string memory version = verifyingContract.version();
         uint256 nonce = verifyingContract.nonces(signer);
         uint256 deadline = 1807337270;
 
         VerifyingContract.Permit memory permit = VerifyingContract.Permit({
             signer: signer,
             message: message,
-            version: version,
+            // version: version,
             verifyingContract: address(verifyingContract),
             nonce: nonce,
             deadline: deadline
         });
 
-        bytes32 digest = sigUtils.getTypesDataHash(signer, message, version, address(verifyingContract), nonce, deadline);
+        bytes32 digest = sigUtils.getTypesDataHash(signer, message, address(verifyingContract), nonce, deadline);
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(signerPrivateKey, digest);
         bool status = verifyingContract.permit(permit, v, r, s);
         assertEq(status,true);
