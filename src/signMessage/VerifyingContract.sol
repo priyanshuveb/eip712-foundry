@@ -65,7 +65,7 @@ contract VerifyingContract {
     // }
 
     function permit(Permit memory _permit, uint8 v, bytes32 r, bytes32 s) public returns(bool){
-        bytes32 structHash = keccak256(abi.encode(PERMIT_TYPEHASH,_permit.signer,_permit.message,_permit.verifyingContract,_permit.nonce,_permit.deadline));
+        bytes32 structHash = keccak256(abi.encode(PERMIT_TYPEHASH,_permit.signer,_permit.message,_permit.verifyingContract,nonces[_permit.signer],_permit.deadline));
         bytes32 hash = keccak256(abi.encodePacked("\x19\x01",DOMAIN_SEPERATOR,structHash));
         address recoveredAddress = ecrecover(hash, v, r, s);
         if (recoveredAddress != _permit.signer) {
