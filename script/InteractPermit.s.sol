@@ -4,50 +4,43 @@ pragma solidity ^0.8.19;
 
 import {Script, console} from "forge-std/Script.sol";
 import {SigUtils} from "../src/eip2612/SigUtils.sol";
+import {Token} from "../src/eip2612/Token.sol";
 
+contract TokenInstance {
+    Token token = Token(0x98F73f8Bc978D365B32C9d0c2ef6d169f653b2F4);
+}
 contract SigUtilsInstance {
-    SigUtils sigUtils = SigUtils(0x7746c853A7cB70083107c2b97bf09d49D17dDe3e);
+    SigUtils sigUtils = SigUtils(0xdb5182B327E1BAd8EA47f66bdD0B9a5CC5C20FaC);
 }
+contract GetApprovalByPermit is Script, SigUtilsInstance, TokenInstance {
 
-contract InteractPermit is Script, SigUtilsInstance {
+    uint256 ownerPrivateKey = vm.envUint("PRIVATE_KEY_SEPOLIA");
+    address owner = 0x90416E8285169F15346FcF9E336B6E1443b8c30A;
+    address spender = 0xb62803C3f1c7112CAd3F35a503504C3B0920eDBF;
+    uint256 value = 10000;
+    uint256 nonce;
+    uint256 deadline = 1807170245;
 
-    SigUtils.Permit myPermit = SigUtils.Permit({
-        owner: 0xCCE71ef4bc4617bf3f7b28722e6F69C760797d43,
-        spender: 0x90416E8285169F15346FcF9E336B6E1443b8c30A,
-        value: 10000,
-        nonce: 0,
-        deadline: 1807170245
-    });
 
-    function run() external returns (bytes32, bytes32) {
-        return getPermitHash();
+    function run() external {
+        getPermit();
     }
 
-    function getPermitHash() internal returns (bytes32, bytes32) {
+    function getPermit() internal {
         vm.startBroadcast();
-        bytes32 structHash = sigUtils.getStructHash(myPermit);
-        bytes32 hashTypedData = sigUtils.getTypedDataHash(myPermit);
-        vm.stopBroadcast();
-        return (structHash, hashTypedData);
-    }
-}
 
-// digest: 0x40371086edec43e54880f3dbb6cb561f08144a7003ffad32e26fb870188351bd
+        nonce = token.nonces(owner);
 
-contract Sign is Script {
-    uint256 ownerPrivateKey = 0xf5c01153b613fb1841815f7fd5636a2cbaad1053ace0068d9889d88999c4815c;
-    bytes32 digest = 0x40371086edec43e54880f3dbb6cb561f08144a7003ffad32e26fb870188351bd;
-
-    function run() external view returns (uint8, bytes32, bytes32) {
-        return getSign();
-    }
-
-    function getSign() internal view returns (uint8, bytes32, bytes32) {
+        SigUtils.Permit memory myPermitValues = SigUtils.Permit({
+        owner: owner,
+        spender: spender,
+        value: value,
+        nonce: nonce,
+        deadline: deadline
+    });
+        bytes32 digest = sigUtils.getTypedDataHash(myPermitValues);
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(ownerPrivateKey, digest);
-        return (v, r, s);
+        token.permit(owner, spender, value, deadline, v, r, s);
+        vm.stopBroadcast();
     }
 }
-
-// 0: uint8 28
-// 1: bytes32 0x1454da78ee42692e6465ea20e852ed9da7e287051b7cf727b4f6534ff8a8b0a7
-// 2: bytes32 0x61071fc52c5a4fa8a36f2563217c1ec6e91b209c8f52b24d91c491c6f6ceaa05
