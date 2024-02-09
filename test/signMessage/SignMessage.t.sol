@@ -13,7 +13,7 @@ contract SignMessageTest is Test {
     address signer;
     uint256 signerPrivateKey;
 
-    function setUp() external{
+    function setUp() external {
         signerPrivateKey = 0xA11CE;
         signer = vm.addr(signerPrivateKey);
         verifyingContract = new VerifyingContract();
@@ -40,7 +40,6 @@ contract SignMessageTest is Test {
         bytes32 digest = sigUtils.getTypesDataHash(signer, message, address(verifyingContract), nonce, deadline);
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(signerPrivateKey, digest);
         bool status = verifyingContract.permit(permit, v, r, s);
-        assertEq(status,true);
-
+        assertEq(status, true);
     }
 }
